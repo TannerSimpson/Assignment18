@@ -34,9 +34,11 @@ const showCrafts = async () => {
 };
 
 const displayCraftDetails = (craft) => {
-    openDialog("dialog-details");
+    openDialog();
+    document.getElementById("form-container").classList.add("hidden");
+    document.getElementById("craft-detail-container").classList.remove("hidden");
 
-    const craftDetails = document.getElementById("dialog-details");
+    const craftDetails = document.getElementById("craft-detail-container");
     craftDetails.innerHTML = "";
 
     const h3 = document.createElement("h3");
@@ -63,7 +65,10 @@ const displayCraftDetails = (craft) => {
 
     const editButton = document.createElement("button");
     editButton.textContent = "Edit";
-    editButton.onclick = () => showEditCraftForm(craft);
+    editButton.onclick = (e) => {
+        e.preventDefault();
+        showEditCraftForm(craft);
+    };
     craftDetails.appendChild(editButton);
 
     const deleteButton = document.createElement("button");
@@ -73,25 +78,28 @@ const displayCraftDetails = (craft) => {
 
 };
 
-const openDialog = (id) => {
+const openDialog = () => {
     document.getElementById("dialog").style.display = "block";
-    document.querySelectorAll("#dialog-details > *").forEach((item) => {
-        item.classList.add("hidden");
-    });
-    document.getElementById(id).classList.remove("hidden");
 };
 
 const showCraftForm = (e) => {
     e.preventDefault();
+    document.getElementById("add-edit-craft-form")._id.value = -1;
     resetForm();
-    openDialog("add-edit-craft-form");
+    openDialog();
+    document.getElementById("form-container").classList.remove("hidden");
+    document.getElementById("craft-detail-container").classList.add("hidden");
 };
 
 const showEditCraftForm = (craft) => {
     resetForm();
+    const formContainer = document.getElementById("form-container");
+    const craftDetailContainer = document.getElementById("craft-detail-container");
     const form = document.getElementById("add-edit-craft-form");
-    form.dataset.mode = "edit"; 
-    form.dataset.craftId = craft._id; 
+    form._id.value = craft._id;
+
+    formContainer.classList.remove("hidden");
+    craftDetailContainer.classList.add("hidden");
 
     document.getElementById("name").value = craft.name;
     document.getElementById("description").value = craft.description;
@@ -107,32 +115,18 @@ const showEditCraftForm = (craft) => {
     openDialog("add-edit-craft-form");
 };
 
-/*const resetForm = () => {
-    const form = document.getElementById("add-edit-craft-form");
-    form.reset();
-    document.getElementById("supply-boxes").innerHTML = "";
-    document.getElementById("img-prev").src = "";
-};*/
-
 const resetForm = () => {
     const form = document.getElementById("add-edit-craft-form");
-    if (form) {
-        form.reset();
-        const supplyBoxes = document.getElementById("supply-boxes");
-        if (supplyBoxes) {
-            supplyBoxes.innerHTML = "";
-        }
-        const imgPrev = document.getElementById("img-prev");
-        if (imgPrev) {
-            imgPrev.src = "";
-        }
-    } else {
-        console.error("Form element not found.");
-    }
+    form.reset();
+    const supplyBoxes = document.getElementById("supply-boxes");
+    supplyBoxes.innerHTML = "";
+    const imgPrev = document.getElementById("img-prev");
+    imgPrev.src = "";
 };
 
 const addSupply = (e, supply = "") => {
-    if (e) e.preventDefault();
+    //if (e) e.preventDefault();
+    e.preventDefault();
     const section = document.getElementById("supply-boxes");
     const input = document.createElement("input");
     input.type = "text";
@@ -145,31 +139,23 @@ const addCraft = async (e) => {
     const form = document.getElementById("add-edit-craft-form");
     const formData = new FormData(form);
     formData.append("supplies", getSupplies());
+    let response;
+    console.log(...formData);
 
-    let url = "/api/crafts";
-    let method = "POST";
-
-    if (form.dataset.mode === "edit") {
-        url += `/${form.dataset.craftId}`;
-        method = "PUT";
-    }
-
-    try {
-        const response = await fetch(url, {
-            method: method,
-            body: formData
+    if(form._id.value == -1) {
+        formData.delete("_id")
+        response = await fetch("/api/crafts", {
+            method: "POST",
+            body: formData,
         });
-
-        if (!response.ok) {
-            throw new Error("Error adding/updating craft");
-        }
-
-        resetForm();
-        document.getElementById("dialog").style.display = "none";
-        showCrafts();
-    } catch (error) {
-        console.error(error);
-    }
+    } else {
+        response = await fetch(`/api/crafts/${form._id.value}`, {
+            method: "PUT",
+            body: formData,
+        });
+    };
+    showCrafts();
+    closeDialog();
 };
 
 const getSupplies = () => {
@@ -218,3 +204,10 @@ document.getElementById("img").onchange = (e) => {
 
     prev.src = URL.createObjectURL(e.target.files.item(0));
 };
+
+const closeDialog = () => {
+    document.getElementById("dialog").style.display="none";
+}
+
+document.getElementById("close-button").onclick = closeDialog;
+document.getElementById("add-edit-craft-form").onsubmit = addCraft;

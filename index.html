@@ -14,10 +14,11 @@
       <div id="dialog" class="w3-modal">
         <div class="w3-modal-content">
           <div class="w3-container">
-            <span onclick="document.getElementById('dialog').style.display='none'"
-            class="w3-button w3-display-topright">&times;</span>
-              <section id="dialog-details">
-                <form id="add-edit-craft-form" method="post" class="hidden">
+            <span id="close-button" class="w3-Button w3-display-topright">&times;</span>
+              
+            <div id="form-container" class="hidden">
+                <form id="add-edit-craft-form" method="post">
+                    <input type="hidden" name="_id" value="-1">
                     <p>
                         <label for="name ">Craft Name:</label>
                         <input type="text" id="name" name="name" required />
@@ -46,15 +47,9 @@
                         <button type="submit">Submit</button>
                     </p>
                 </form>
+            </div>
 
-                <section id="supply-details" class="hidden">
-
-                </section>
-              </section>
-              <section id="edit-dialog">
-                
-              </section>
-          </div>
+            <div id="craft-detail-container"></div>
         </div>
       </div>   
     </div>

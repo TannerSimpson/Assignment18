@@ -334,10 +334,11 @@ app.post("/api/crafts", upload.single("img"), (req, res) => {
     res.send(craft);
 });
 
-app.put("/api/crafts/:id", (req, res) => {
-    const craftId = parseInt(req.params.id);
-    const craftIndex = crafts.findIndex(craft => craft._id === craftId);
-    if (craftIndex === -1) {
+app.put("/api/crafts/:id", upload.single("img"), (req, res) => {
+    const id = parseInt(req.params.id);
+    const craft = crafts.find((craftCheck) => craftCheck._id === id);
+    console.log(craft);
+    if (craft === -1) {
         return res.status(404).send("Craft not found.");
     }
 
@@ -346,16 +347,17 @@ app.put("/api/crafts/:id", (req, res) => {
         return res.status(400).send(result.error.details[0].message);
     }
 
-    crafts[craftIndex].name = req.body.name;
-    crafts[craftIndex].description = req.body.description;
-    crafts[craftIndex].supplies = req.body.supplies.split(",");
+    craft.name = req.body.name;
+    craft.description = req.body.description;
+    craft.supplies = req.body.supplies.split(",");
+    craft.image = req.file.filename;
 
-    res.send(crafts[craftIndex]);
+    res.send(craft);
 });
 
 app.delete("/api/crafts/:id", (req, res) => {
     const craftId = parseInt(req.params.id);
-    const craftIndex = crafts.findIndex(craft => craft._id === craftId);
+    const craftIndex = crafts.findIndex((craft) => craft._id === craftId);
     if (craftIndex === -1) {
         return res.status(404).send("Craft not found.");
     }
