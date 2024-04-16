@@ -7,6 +7,7 @@ app.use("/uploads", express.static("uploads"));
 app.use(express.json());
 const cors = require("cors");
 app.use(cors());
+const mongoose = require("mongoose");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -18,6 +19,19 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({storage: storage});
+
+mongoose.connect("mongodb+srv://TannerSimpson:TSimpson1@cluster0.emtozuj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    .then(() => console.log("connected"))
+    .catch((error) => console.log("couldnt connect", error));
+
+const craftSchema = new mongoose.Schema({
+    name: String,
+    description: String,
+    supplies: [String],
+    img: String,
+})
+
+const Craft = mongoose.model("Craft", craftSchema);
 
 let crafts = [
     {
@@ -354,6 +368,8 @@ app.put("/api/crafts/:id", upload.single("img"), (req, res) => {
 
     res.send(craft);
 });
+
+
 
 app.delete("/api/crafts/:id", (req, res) => {
     const craftId = parseInt(req.params.id);
